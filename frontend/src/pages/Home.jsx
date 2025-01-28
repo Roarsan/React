@@ -1,44 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MovieCard from "../components/MovieCard";
 import '../css/Home.css';
+import { getPopularMovies } from "../services/api";
+import { searchMovies } from "../services/api";
 
 
 
 function Home() {
     const [searchQuery, setSearchQuery] = useState("");
 
-    const movies = [
-        { id: 1, title: 'hero', release_date: 2020 },
-        { id: 2, title: 'zero', release_date: 2020 },
-        { id: 3, title: 'tero', release_date: 2020 },
-        { id: 4, title: 'mero', release_date: 2020 }
+    const [movies, setMovies] = useState([]);
 
-    ]
+    useEffect(() => {
+        const popularMovies = async () => {
+            try {
+                const popularMovies = await getPopularMovies();
+                setMovies(popularMovies);
+            } catch (error) {
+                console.log("error loading...")
+            }
+        }
+        popularMovies();
+    }, [])
 
-    function handleSearch(e) {
+    async function handleSearch(e) {
         e.preventDefault();
+        try {
+            const searchResult = await searchMovies(searchQuery);
+            setMovies(searchResult);
+        } catch (error) {
+            console.log("error loading...")
+        }
     }
 
     return (
         <div className="home">
-        <form className="search-form" onSubmit={handleSearch}>
-            <input
-                className="search-input"
-                placeholder="Search Movies"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button className="search-button" type="submit">Search</button>
-        </form>
-        <div className="movies-grid">
+            <form className="search-form" onSubmit={handleSearch}>
+                <input
+                    className="search-input"
+                    placeholder="Search Movies"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button className="search-button" type="submit">Search</button>
+            </form>
+            <div className="movies-grid">
             {movies.map((movie) => (
-                movie.title.startsWith(searchQuery) && (
                     <MovieCard movie={movie} key={movie.id} />
-                )
-            ))}
+                ))}
+            </div>
         </div>
-    </div>
-    
+
     );
 
 }
